@@ -5,4 +5,6 @@
     </NuxtLayout>
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import 'vant/lib/index.css';
+</script>

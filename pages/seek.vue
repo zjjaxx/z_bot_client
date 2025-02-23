@@ -176,10 +176,10 @@ const showDetail = (desc: string) => {
   padding: 20px;
 }
 .empty {
-  margin-top: 300px;
-  width: 80px;
-  height: 80px;
-  background-image: url("@/assets/imgs/empty.png");
-  background-size: 100% 100%;
+    margin: 300px auto 0;
+    width: 50px;
+    height: 50px;
+    background-image: url("@/assets/imgs/empty.png");
+    background-size: 100% 100%;
 }
 </style>
