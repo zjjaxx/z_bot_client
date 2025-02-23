@@ -1,6 +1,6 @@
 <template>
   <div class="sector-page">
-    <van-nav-bar title="板块龙头" fixed placeholder />
+    <van-nav-bar title="板块龙头" fixed placeholder  />
     <!-- 板块网格布局 -->
     <van-grid :column-num="2" :gutter="12">
       <van-grid-item v-for="sector in dragonList" :key="sector.id">
@@ -80,8 +80,8 @@ const formatRate = (value) => {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-.sector-page {
-  padding: 12px;
+:deep(.van-nav-bar__placeholder){
+    height: 46px;
 }
 
 .sector-card {

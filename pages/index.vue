@@ -1,120 +1,174 @@
 <template>
   <div class="stock-page">
     <van-nav-bar title="每日策略" fixed placeholder />
-    <van-list>
-      <van-cell
-        v-for="(item, index) in strategyList"
+    <van-list class="strategy-list" v-if="middleList.length">
+      <div
+        v-for="(item, index) in middleList"
         :key="index"
-        :title="item.stockCode"
-        :label="item.time"
+        class="strategy-card"
       >
-        <template #value>
-          <div class="strategy-info">
-            <div class="header">
-              <van-tag :color="getActionColor(item.action)" class="action-tag">
-                {{ item.action }}
-              </van-tag>
-              <van-tag :color="getPositionColor(item.position)" plain>
-                {{ item.position }}
-              </van-tag>
-            </div>
-            <div class="strategy-name">{{ item.strategyName }}</div>
-            <div class="description">{{ item.description }}</div>
-            <van-button size="mini" class="detail-btn"> 查看详情 </van-button>
+        <div class="card-header">
+          <div>
+            <h3 class="stock-code">股票代码:{{ item.stock_id }}</h3>
+            <p class="operate-time">操作时间:{{ item.strateOperateTime }}</p>
           </div>
-        </template>
-      </van-cell>
+          <div class="tag-group">
+            <van-tag :color="getActionColor(item.action)" class="action-tag">
+              {{ item.action }}
+            </van-tag>
+            <van-tag
+              :color="getPositionColor(item.strateOperate)"
+              plain
+              class="position-tag"
+            >
+              {{ formatStrateOperate(item.strateOperate) }}
+            </van-tag>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <p class="strategy-name">策略名称：{{ item.strateName }}</p>
+          <p class="create-time">{{ item.created }}</p>
+        </div>
+
+        <div class="card-footer">
+          <van-button
+            size="small"
+            class="detail-btn"
+            type="danger"
+            round
+            @click="showDetail(item.strateDesc)"
+          >
+            查看详情
+          </van-button>
+        </div>
+      </div>
     </van-list>
+    <div v-else class="empty"></div>
+    <van-dialog v-model:show="strategyShow" title="策略详情">
+        <div class="dialog-content" v-html="strateDesc"></div>
+    </van-dialog>
   </div>
 </template>
 <script setup lang="ts">
+import {
+  getActionColor,
+  formatStrateOperate,
+  getPositionColor,
+} from "@/utils/index";
 definePageMeta({
   tabbar: true, // 底部导航
-})
-const getActionColor = (action) => {
-  const colors = {
-    买入: "#07c160",
-    卖出: "#ee0a24",
-    持有: "#ff976a",
-    观望: "#969799",
-  };
-  return colors[action] || "#969799";
-};
+});
 
-const getPositionColor = (position) => {
-  const colors = {
-    轻仓: "#07c160",
-    中等仓位: "#ff976a",
-    重仓: "#ee0a24",
-  };
-  return colors[position] || "#969799";
+const runtimeConfig = useRuntimeConfig();
+const { data: response } = await useFetch("/bot_server/strategy_top_list", {
+  baseURL: runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
+});
+const middleList = ref([]);
+if (response.value.success) {
+  middleList.value = response.value.data;
+}
+const strategyShow=ref(false)
+const strateDesc=ref("")
+const showDetail = (desc: string) => {
+    strategyShow.value=true
+    strateDesc.value=desc
 };
-const strategyList = ref([
-  {
-    stockCode: "SH600519",
-    strategyName: "白酒龙头回调策略",
-    action: "买入",
-    time: "2023-07-20 09:30:00",
-    description: "二季度业绩超预期，MACD金叉形成",
-    position: "中等仓位",
-  },
-  {
-    stockCode: "SZ300750",
-    strategyName: "新能源超跌反弹",
-    action: "观望",
-    time: "2023-07-20 10:15:00",
-    description: "板块整体回调，等待企稳信号",
-    position: "轻仓",
-  },
-  {
-    stockCode: "HK00700",
-    strategyName: "平台经济政策利好",
-    action: "持有",
-    time: "2023-07-20 11:00:00",
-    description: "政策支持力度加大，长期看好",
-    position: "重仓",
-  },
-]);
 </script>
 
 <style lang="scss" scoped>
+:deep(.van-nav-bar__placeholder) {
+  height: 46px;
+}
 .stock-page {
   padding: 12px;
+  background: #f7f8fa;
+  height: 100vh;
 
-  .strategy-info {
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-
-      .action-tag {
-        font-size: 14px;
-        padding: 2px 6px;
-      }
-    }
-
-    .strategy-name {
-      font-weight: 500;
-      color: #323233;
-      margin-bottom: 4px;
-    }
-
-    .description {
-      font-size: 12px;
-      color: #969799;
-      margin-bottom: 8px;
-      line-height: 1.4;
-    }
-
-    .detail-btn {
-      width: 80px;
-      font-size: 12px;
-    }
+  .strategy-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
   }
 
-  ::v-deep .van-cell__value {
-    flex: 2.5;
+  .strategy-card:hover {
+    transform: translateY(-2px);
   }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .stock-code {
+    margin: 0;
+    color: #2d3436;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .operate-time {
+    margin: 4px 0 0;
+    color: #95a5a6;
+    font-size: 12px;
+  }
+
+  .tag-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .action-tag {
+    color: white !important;
+    font-weight: bold;
+    border-radius: 4px;
+  }
+
+  .position-tag {
+    border-radius: 4px;
+  }
+
+  .card-body {
+    margin: 12px 0;
+  }
+
+  .strategy-name {
+    margin: 0;
+    color: #2d3436;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .create-time {
+    margin: 8px 0 0;
+    color: #95a5a6;
+    font-size: 12px;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .detail-btn {
+    width: 100px;
+    font-size: 13px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+.dialog-content{
+    padding: 20px;
+}
+.empty{
+    margin: 300px auto 0;
+    width: 50px;
+    height: 50px;
+    background-image: url("@/assets/imgs/empty.png");
+    background-size: 100% 100%;
 }
 </style>
