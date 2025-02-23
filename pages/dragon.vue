@@ -61,7 +61,7 @@ definePageMeta({
 });
 const runtimeConfig = useRuntimeConfig();
 const { data: response } = await useFetch("/bot_server/dragon_list", {
-  baseURL: runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
+    baseURL: 'http://47.92.125.144:3001'//runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
 });
 const dragonList = ref([]);
 if (response.value.success) {
