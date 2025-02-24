@@ -73,7 +73,7 @@ definePageMeta({
 
 const runtimeConfig = useRuntimeConfig();
 const { data: response } = await useFetch("/bot_server/strategy_middle_list", {
-    baseURL: 'http://47.92.125.144:3001'//runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
+    baseURL: runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
 });
 const middleList = ref([]);
 if (response.value.success) {

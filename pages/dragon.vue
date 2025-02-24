@@ -1,57 +1,100 @@
 <template>
   <div class="sector-page">
-    <van-nav-bar title="板块龙头" fixed placeholder  />
-    <!-- 板块网格布局 -->
-    <van-grid :column-num="2" :gutter="12">
-      <van-grid-item v-for="sector in dragonList" :key="sector.id">
-        <div class="sector-card">
-          <!-- 板块名称和涨跌 -->
-          <div class="sector-header">
-            <h3 class="name">{{ sector.block }}</h3>
-            <span
-              class="change-rate"
-              :class="{
-                'text-rise': sector.block_rate >= 0,
-                'text-fall': sector.block_rate < 0,
-              }"
-            >
-              {{ formatRate(sector.block_rate) }}
-            </span>
-          </div>
+    <van-nav-bar title="板块龙头" fixed placeholder z-index="1000" />
+    <van-tabs v-model:active="active" sticky offset-top="46px" color="#ee0a24">
+      <van-tab title="概念板块">
+        <!-- 板块网格布局 -->
+        <van-grid :column-num="2" :gutter="12">
+          <van-grid-item v-for="sector in virtualList" :key="sector.id">
+            <div class="sector-card">
+              <!-- 板块名称和涨跌 -->
+              <div class="sector-header">
+                <h3 class="name">{{ sector.block }}</h3>
+                <span
+                  class="change-rate"
+                  :class="{
+                    'text-rise': sector.block_rate >= 0,
+                    'text-fall': sector.block_rate < 0,
+                  }"
+                >
+                  {{ formatRate(sector.block_rate) }}
+                </span>
+              </div>
 
-          <!-- 净流入金额 -->
-          <div class="net-inflow">
-            <span class="label">净流入</span>
-            <span
-              class="value"
-              :class="{
-                'text-rise': sector.input >= 0,
-                'text-fall': sector.input < 0,
-              }"
-            >
-              {{ sector.input }}亿元
-            </span>
-          </div>
-
-          <!-- 领涨股信息 -->
-          <div class="leader-stock">
-            <div class="stock-name">领涨股:{{ sector.codeName }}</div>
-            <div class="stock-info">
-              <span class="price">现价:{{ sector.price }}</span>
-              <span
-                class="stock-change"
-                :class="{
-                  'text-rise': sector.pnl_rate >= 0,
-                  'text-fall': sector.pnl_rate < 0,
-                }"
-              >
-                涨幅:{{ formatRate(sector.pnl_rate) }}
-              </span>
+              <!-- 领涨股信息 -->
+              <div class="leader-stock">
+                <div class="stock-name">领涨股:{{ sector.codeName }}</div>
+                <div class="stock-info">
+                  <!-- <span class="price">现价:{{ sector.price }}</span> -->
+                  <span
+                    class="stock-change"
+                    :class="{
+                      'text-rise': sector.pnl_rate >= 0,
+                      'text-fall': sector.pnl_rate < 0,
+                    }"
+                  >
+                    涨幅:{{ formatRate(sector.pnl_rate) }}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </van-grid-item>
-    </van-grid>
+          </van-grid-item>
+        </van-grid>
+      </van-tab>
+      <van-tab title="行业板块">
+        <!-- 板块网格布局 -->
+        <van-grid :column-num="2" :gutter="12">
+          <van-grid-item v-for="sector in dragonList" :key="sector.id">
+            <div class="sector-card">
+              <!-- 板块名称和涨跌 -->
+              <div class="sector-header">
+                <h3 class="name">{{ sector.block }}</h3>
+                <span
+                  class="change-rate"
+                  :class="{
+                    'text-rise': sector.block_rate >= 0,
+                    'text-fall': sector.block_rate < 0,
+                  }"
+                >
+                  {{ formatRate(sector.block_rate) }}
+                </span>
+              </div>
+
+              <!-- 净流入金额 -->
+              <div class="net-inflow">
+                <span class="label">净流入</span>
+                <span
+                  class="value"
+                  :class="{
+                    'text-rise': sector.input >= 0,
+                    'text-fall': sector.input < 0,
+                  }"
+                >
+                  {{ sector.input }}亿元
+                </span>
+              </div>
+
+              <!-- 领涨股信息 -->
+              <div class="leader-stock">
+                <div class="stock-name">领涨股:{{ sector.codeName }}</div>
+                <div class="stock-info">
+                  <span class="price">现价:{{ sector.price }}</span>
+                  <span
+                    class="stock-change"
+                    :class="{
+                      'text-rise': sector.pnl_rate >= 0,
+                      'text-fall': sector.pnl_rate < 0,
+                    }"
+                  >
+                    涨幅:{{ formatRate(sector.pnl_rate) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </van-grid-item>
+        </van-grid>
+      </van-tab>
+    </van-tabs>
   </div>
 </template>
 
@@ -59,13 +102,21 @@
 definePageMeta({
   tabbar: true, // 底部导航
 });
+const active = ref(0);
 const runtimeConfig = useRuntimeConfig();
 const { data: response } = await useFetch("/bot_server/dragon_list", {
-    baseURL: 'http://47.92.125.144:3001'//runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
+  baseURL: runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
+});
+const { data: virtualResponse } = await useFetch("/bot_server/virtual_list", {
+  baseURL: runtimeConfig.public.baseURL, // 使用 runtimeConfig 中的 baseURL
 });
 const dragonList = ref([]);
+const virtualList = ref([]);
 if (response.value.success) {
   dragonList.value = response.value.data;
+}
+if (virtualResponse.value.success) {
+  virtualList.value = virtualResponse.value.data;
 }
 
 // 格式化涨跌幅
@@ -80,12 +131,12 @@ const formatRate = (value) => {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-:deep(.van-nav-bar__placeholder){
-    height: 46px;
+:deep(.van-nav-bar__placeholder) {
+  height: 46px;
 }
 
 .sector-card {
-    width: 100%;
+  width: 100%;
 }
 
 .sector-header {
